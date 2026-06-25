@@ -1,5 +1,5 @@
 // Credits to Mike Shah  -  https://youtu.be/yZl9X47cHi8
-// g++ letterbox_demo.cpp -O3 -o letterbox_demo_testprogram `pkg-config --libs --cflags sdl3`
+// g++ snak_gaem.cpp -O3 -o snak_gaem `pkg-config --libs --cflags sdl3`
 
 // .
 // .
@@ -17,7 +17,9 @@
 
 #define GAME_SPEED 1
 
-
+void gdb_debugging(){
+		int nop_homemade = 0;
+	}
 
 struct SDL_Application{
 
@@ -47,24 +49,52 @@ struct SDL_Application{
 	~SDL_Application(){
 		SDL_Quit();
 	}
-	
+
 	void Input(){
+
+		int nop_casero = 0;			// Homemade nop instruction.
+
 		SDL_Event event;
 
 		while (SDL_PollEvent(&event)){
 			if (event.type == SDL_EVENT_QUIT){
 				running = false;
 			} else if (event.type == SDL_EVENT_KEY_DOWN) {
-                // SDL_Log("Congratulations! You just pressed the %d key!!! :3", event.button.button);
-            	if (event.button.button == 79) {
-            		facing = "right";
-            	} else if (event.button.button == 80) {
-            		facing = "left";
-            	} else if (event.button.button == 81) {
-					facing = "down";
-            	} else if (event.button.button == 82) {
-					facing = "up";
-            	}
+
+				auto input = event.button.button;
+
+				gdb_debugging();		// Debugging breakpoint for gdb.
+
+				// Consider replacing this with an enum in the future, for tidier code...
+				if ((pre_input % 2) == (input % 2)){
+					input = pre_input;		// Moving backwards will not be allowed!
+					SDL_Log("BAD.");
+				} else {
+					SDL_Log("Good.");
+				}
+
+            	switch (pre_input) {
+
+	            	case 79:
+	            		facing = "right";
+	            		break;
+	            		
+            		case 80:
+            			facing = "left";
+            			break;
+            			
+					case 81:
+						facing = "down";
+						break;
+						
+            		case 82:
+						facing = "up";
+						break;
+
+					default:
+		                // SDL_Log("Congratulations! You just pressed the %d key!!! :3", event.button.button);
+						nop_casero = 0;		// Homemade nop instruction.
+				}
             }
 		}
 	}
@@ -90,6 +120,10 @@ struct SDL_Application{
 		SDL_RenderFillRect(mRenderer, &rect);
 
 		SDL_SetRenderDrawColor(mRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+
+
+		SDL_Log(facing.c_str());
 
 		if (facing == "right") {
 			std::get<0>(pos::current_pos) += GAME_SPEED;

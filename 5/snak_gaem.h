@@ -15,6 +15,11 @@ namespace pos
 	std::tuple<int, int> current_pos(100, 100);
 }
 
+
+// You have to be moving SOMEWHERE when you first start the game, no?
+int pre_input = 82;
 std::string facing = "right";
+
+
 
 #endif
