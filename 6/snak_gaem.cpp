@@ -5,21 +5,32 @@
 // .
 // .
 
-#include <SDL3/SDL.h>
-#include <string>
-#include <cassert>
-#include <tuple>
-
 #include "snak_gaem.h"
 
-#define WINDOW_WIDTH 320
-#define WINDOW_HEIGHT 180
 
-#define GAME_SPEED 1
 
-void gdb_debugging(){
-		int nop_homemade = 0;
-	}
+// Swaps inputs 79 and 82 to ensure correct parity checks.
+int remap(int input){
+
+	switch (input) {
+		case 82:
+			input = 79;
+			break;
+			
+		case 79:
+			input = 82;
+			break;
+			
+		default:
+			int nop_nop = 0;
+	} 
+
+	// Returns the remapped input.
+	return input;
+}
+
+
+
 
 struct SDL_Application{
 
@@ -49,7 +60,7 @@ struct SDL_Application{
 	~SDL_Application(){
 		SDL_Quit();
 	}
-
+	
 	void Input(){
 
 		int nop_casero = 0;			// Homemade nop instruction.
@@ -63,20 +74,26 @@ struct SDL_Application{
 
 				auto input = event.button.button;
 
-				gdb_debugging();		// Debugging breakpoint for gdb.
+				input = remap(input);
 
 				// Consider replacing this with an enum in the future, for tidier code...
-				if ((pre_input % 2) == (input % 2)){
-					input = pre_input;		// Moving backwards will not be allowed!
-					SDL_Log("BAD.");
-				} else {
-					SDL_Log("Good.");
+				if ((pre_input % 2) != (input % 2)){
+					pre_input = input;		// Moving backwards will not be allowed!
 				}
 
-            	switch (pre_input) {
+                std::tuple<Sint32, Sint32> current_item = item::generate_item();
 
+				SDL_Log("\n");
+				SDL_Log("item position:");
+				SDL_Log("(%d, %d)", std::get<0>(current_item), std::get<1>(current_item));
+				SDL_Log("\n");
+
+
+            	switch (pre_input) {
+					
 	            	case 79:
-	            		facing = "right";
+	            		// facing = "right";
+	            		facing = "up";
 	            		break;
 	            		
             		case 80:
@@ -88,7 +105,8 @@ struct SDL_Application{
 						break;
 						
             		case 82:
-						facing = "up";
+						// facing = "up";
+						facing = "right";
 						break;
 
 					default:
@@ -106,7 +124,8 @@ struct SDL_Application{
 
 	void Render(){
 
-		SDL_SetRenderDrawColor(mRenderer, 0xBB, 0xAA, 0xEE, 0xFF);
+		// SDL_SetRenderDrawColor(mRenderer, 0xBB, 0xAA, 0xEE, 0xFF);
+        SDL_SetRenderDrawColor(mRenderer, 0x9C, 0x65, 0x7D, 0xFF);
 		SDL_RenderClear(mRenderer);
 
         SDL_FRect rect{
@@ -123,20 +142,20 @@ struct SDL_Application{
 
 
 
-		SDL_Log(facing.c_str());
+		// SDL_Log(facing.c_str());
 
 		if (facing == "right") {
-			std::get<0>(pos::current_pos) += GAME_SPEED;
+			std::get<0>(player_pos::current_pos) += GAME_SPEED;
 		} else if (facing == "left") {
-			std::get<0>(pos::current_pos) -= GAME_SPEED;
+			std::get<0>(player_pos::current_pos) -= GAME_SPEED;
 		} else if (facing == "up") {
-			std::get<1>(pos::current_pos) -= GAME_SPEED;
+			std::get<1>(player_pos::current_pos) -= GAME_SPEED;
 		} else {	// facing == "down".
-			std::get<1>(pos::current_pos) += GAME_SPEED;
+			std::get<1>(player_pos::current_pos) += GAME_SPEED;
 		}
 
 		
-		SDL_RenderPoint(mRenderer, std::get<0>(pos::current_pos), std::get<1>(pos::current_pos));
+		SDL_RenderPoint(mRenderer, std::get<0>(player_pos::current_pos), std::get<1>(player_pos::current_pos));
         SDL_RenderRect(mRenderer, &rect);
         
 		SDL_RenderPresent(mRenderer);
