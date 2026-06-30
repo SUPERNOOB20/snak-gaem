@@ -80,7 +80,7 @@ struct SDL_Application{
 		    for (int i = 0; i > SDL_GetNumRenderDrivers(); i++) {
 			    SDL_Log("%d, %s", i + 1, SDL_GetRenderDriver(i));
 		    }
-            SDL_SetRenderLogicalPresentation(mRenderer, 320, 180, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+            SDL_SetRenderLogicalPresentation(mRenderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	    }
     }
 	    
@@ -155,17 +155,41 @@ struct SDL_Application{
             .h = PLAYFIELD_HEIGHT
         };
 
-        // Renders the playfield.
+        float scale_factor = 0.9f;
+
+        SDL_FRect playfield_but_bigger{
+            .x = (WINDOW_WIDTH - PLAYFIELD_WIDTH - scale_factor) / 2 ,
+            .y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT - scale_factor) / 2 ,
+            .w = PLAYFIELD_WIDTH * 1.0f + scale_factor,
+            .h = PLAYFIELD_HEIGHT * 1.0f + scale_factor
+        };
+
+        // Renders the playfield (outer part).
+		SDL_SetRenderDrawColor(mRenderer, 0xcc, 0x88, 0x88, 0xFF);
+		SDL_RenderFillRect(mRenderer, &playfield_but_bigger);
+        
+        // Renders the playfield (inner part).
 		SDL_SetRenderDrawColor(mRenderer, 0x00, 0x00, 0x00, 0xFF);
 		SDL_RenderFillRect(mRenderer, &playfield);
 
+
+
+
         // SDL_Log("(%d, %d)", std::get<0>(current_item), std::get<1>(current_item));
 
-        bool item_got_picked_up = ((std::get<0>(current_item) == std::get<0>(player_pos::current_pos)) && (std::get<1>(current_item) == std::get<1>(player_pos::current_pos)));
+        // Old implementation - a bit buggy, as it was designed for int and not decimal coords... (you can only pick an item if your coords are an exact match).
+        // bool item_got_picked_up = ((std::get<0>(current_item) == (int) std::get<0>(player_pos::current_pos)) && (std::get<1>(current_item) == (int) std::get<1>(player_pos::current_pos)));
 
+        // New implementation - designed for decimal coords (you pick an item if you get close enough to it).
+        bool item_got_picked_up = SDL_pow((SDL_pow((std::get<0>(current_item)) - std::get<0>(player_pos::current_pos), 2) + SDL_pow( (std::get<1>(current_item)) - std::get<1>(player_pos::current_pos), 2)), 0.5f) < 1;
+
+
+        // SDL_Log("distance to item: %f", SDL_pow((SDL_pow(((float) (std::get<0>(current_item))) - std::get<0>(player_pos::current_pos), 2) + SDL_pow(((float) (std::get<1>(current_item))) - std::get<1>(player_pos::current_pos), 2)), 1/2));
         // SDL_Log("bool: %d", item_got_picked_up);
 
         if ((currentFrame == 0) || (item_got_picked_up)){
+
+            game_speed *= 1.25;
 
             std::tuple<Sint32, Sint32> new_item = generate_item();
 
@@ -184,13 +208,13 @@ struct SDL_Application{
 
         
 		if (facing == "right") {
-			std::get<0>(player_pos::current_pos) += GAME_SPEED;
+			(double) (std::get<0>(player_pos::current_pos) += game_speed);
 		} else if (facing == "left") {
-			std::get<0>(player_pos::current_pos) -= GAME_SPEED;
+			(double) (std::get<0>(player_pos::current_pos) -= game_speed);
 		} else if (facing == "up") {
-			std::get<1>(player_pos::current_pos) -= GAME_SPEED;
+			(double) (std::get<1>(player_pos::current_pos) -= game_speed);
 		} else {	// facing == "down".
-			std::get<1>(player_pos::current_pos) += GAME_SPEED;
+			(double) (std::get<1>(player_pos::current_pos) += game_speed);
 		}
 
         // Renders the player		

@@ -16,14 +16,15 @@
 // to be more explicit about our
 // preprocessor usage! ^_^
 
-#define WINDOW_WIDTH 320
-#define WINDOW_HEIGHT 180
+#define WINDOW_WIDTH 64
+#define WINDOW_HEIGHT 36
 
-#define PLAYFIELD_WIDTH 240
-#define PLAYFIELD_HEIGHT 120
+#define PLAYFIELD_WIDTH 48
+#define PLAYFIELD_HEIGHT 24
+
+double game_speed = 0.115;      // fine-tuned initial player speed value after a lot of testplaying... (MY own testplaying ":3)
 
 
-#define GAME_SPEED 1
 
 
 namespace item
@@ -36,10 +37,7 @@ namespace item
 	    std::tuple<Sint32, Sint32> item_pos(item_x, item_y);
             return item_pos;
     }
-
-    std::tuple<Sint32, Sint32> current_item = generate_item();
 }
-
 
 
 namespace player_pos
@@ -53,7 +51,8 @@ namespace player_pos
 	current_pos = std::make_tuple(100, 100);		// Current position of the player.
 	*/
 
-	std::tuple<int, int> current_pos(100, 100);
+    // Start near the center of the screen idk
+	std::tuple<double, double> current_pos(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2);
 }
 
 
