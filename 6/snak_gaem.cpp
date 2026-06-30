@@ -30,9 +30,37 @@ int remap(int input){
 }
 
 
+std::tuple<float, float> generate_item(){
+
+    std::tuple<Sint32, Sint32> current_item = item::generate_item();
+
+    // Implicit conversion from Sint32 to float here...
+    float item_x = std::get<0>(current_item) + (WINDOW_WIDTH  - PLAYFIELD_WIDTH)  / 2;
+    float item_y = std::get<1>(current_item) + (WINDOW_HEIGHT - PLAYFIELD_HEIGHT) / 2;
+
+    std::tuple<Sint32, Sint32> translated_item(item_x, item_y); // Moves the item (More info on translation here: https://en.wikipedia.org/wiki/Translation_(geometry))
+
+	// SDL_Log("\n");
+	// SDL_Log("item position:");
+	// SDL_Log("(%d, %d)", std::get<0>(current_item), std::get<1>(current_item));
+	// SDL_Log("\n");
+
+    return translated_item;
+}
+
+
+std::tuple<Sint32, Sint32> current_item = generate_item();
+
+
+
 
 
 struct SDL_Application{
+
+    int score    =  0;
+    int hiscore  =  0;
+
+
 
     SDL_Window* mWindow;
     SDL_Renderer* mRenderer;
@@ -81,16 +109,8 @@ struct SDL_Application{
 					pre_input = input;		// Moving backwards will not be allowed!
 				}
 
-                std::tuple<Sint32, Sint32> current_item = item::generate_item();
-
-				SDL_Log("\n");
-				SDL_Log("item position:");
-				SDL_Log("(%d, %d)", std::get<0>(current_item), std::get<1>(current_item));
-				SDL_Log("\n");
-
-
             	switch (pre_input) {
-					
+
 	            	case 79:
 	            		// facing = "right";
 	            		facing = "up";
@@ -122,28 +142,47 @@ struct SDL_Application{
 	}
 
 
-	void Render(){
+	void Render(int currentFrame){
 
 		// SDL_SetRenderDrawColor(mRenderer, 0xBB, 0xAA, 0xEE, 0xFF);
         SDL_SetRenderDrawColor(mRenderer, 0x9C, 0x65, 0x7D, 0xFF);
 		SDL_RenderClear(mRenderer);
 
-        SDL_FRect rect{
-            .x = 50,
-            .y = 50,
-            .w = 160,
-            .h = 90
+        SDL_FRect playfield{
+            .x = (WINDOW_WIDTH - PLAYFIELD_WIDTH) / 2,
+            .y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT) / 2,
+            .w = PLAYFIELD_WIDTH,
+            .h = PLAYFIELD_HEIGHT
         };
 
+        // Renders the playfield.
 		SDL_SetRenderDrawColor(mRenderer, 0x00, 0x00, 0x00, 0xFF);
-		SDL_RenderFillRect(mRenderer, &rect);
+		SDL_RenderFillRect(mRenderer, &playfield);
 
-		SDL_SetRenderDrawColor(mRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        // SDL_Log("(%d, %d)", std::get<0>(current_item), std::get<1>(current_item));
+
+        bool item_got_picked_up = ((std::get<0>(current_item) == std::get<0>(player_pos::current_pos)) && (std::get<1>(current_item) == std::get<1>(player_pos::current_pos)));
+
+        // SDL_Log("bool: %d", item_got_picked_up);
+
+        if ((currentFrame == 0) || (item_got_picked_up)){
+
+            std::tuple<Sint32, Sint32> new_item = generate_item();
+
+            std::get<0>(current_item) = std::get<0>(new_item);
+            std::get<1>(current_item) = std::get<1>(new_item);
+
+            if (item_got_picked_up){
+                score++;
+            }
+        }
 
 
+        // Renders items.
+        SDL_SetRenderDrawColor(mRenderer, 0x00, 0xFF, 0x00, 0xFF);
+    	SDL_RenderPoint(mRenderer, std::get<0>(current_item), std::get<1>(current_item));
 
-		// SDL_Log(facing.c_str());
-
+        
 		if (facing == "right") {
 			std::get<0>(player_pos::current_pos) += GAME_SPEED;
 		} else if (facing == "left") {
@@ -154,29 +193,36 @@ struct SDL_Application{
 			std::get<1>(player_pos::current_pos) += GAME_SPEED;
 		}
 
-		
+        // Renders the player		
+        SDL_SetRenderDrawColor(mRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderPoint(mRenderer, std::get<0>(player_pos::current_pos), std::get<1>(player_pos::current_pos));
-        SDL_RenderRect(mRenderer, &rect);
         
 		SDL_RenderPresent(mRenderer);
 	}
 
 	// Every tick is one iteration of the game loop.
-	void Tick(){
+	void Tick(int currentFrame){
 		Input();
 		Update();
-		Render();
+		Render(currentFrame);
 	}
 
 	void MainLoop(){
 		Uint64 fps = 0;
 		Uint64 lastTime = 0;
+        Uint64 currentFrame = 0;
+
 		while(running){
 			Uint64 currentTick = SDL_GetTicks();
-			Tick();
+			Tick(currentFrame);
+            currentFrame++;
 			fps++;
 
 			Uint64 deltaTime = SDL_GetTicks() - currentTick;
+            
+            SDL_Delay(16.666666 - deltaTime);       // Homemade VSync...      
+            SDL_Delay(4.1666666 - deltaTime);       // Homemade 240fps cap...     
+
 			if (currentTick > lastTime + 1000) {
 				lastTime = currentTick;
 				std::string title;
@@ -185,7 +231,7 @@ struct SDL_Application{
 				fps = 0;
 			}
 
-			SDL_Delay(16);
+			// SDL_Delay(16);
 			
 		}
 	}

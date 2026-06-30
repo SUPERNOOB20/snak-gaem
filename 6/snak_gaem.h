@@ -36,7 +36,10 @@ namespace item
 	    std::tuple<Sint32, Sint32> item_pos(item_x, item_y);
             return item_pos;
     }
+
+    std::tuple<Sint32, Sint32> current_item = generate_item();
 }
+
 
 
 namespace player_pos
