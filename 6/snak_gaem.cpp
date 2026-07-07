@@ -158,8 +158,8 @@ struct SDL_Application{
         float scale_factor = 0.9f;
 
         SDL_FRect playfield_but_bigger{
-            .x = (WINDOW_WIDTH - PLAYFIELD_WIDTH - scale_factor) / 2 ,
-            .y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT - scale_factor) / 2 ,
+            .x = (WINDOW_WIDTH - PLAYFIELD_WIDTH - scale_factor) / 2,
+            .y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT - scale_factor) / 2,
             .w = PLAYFIELD_WIDTH * 1.0f + scale_factor,
             .h = PLAYFIELD_HEIGHT * 1.0f + scale_factor
         };
