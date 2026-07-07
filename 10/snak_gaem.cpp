@@ -158,11 +158,15 @@ struct SDL_Application{
 
                 // Use the "R" key to restart after a game over.
                 if (input == 21 && game_over){
+                    score = 0;
+
                     game_is_paused = false;
                     game_over = false;
+                    input = 79;             // When you respawn, facing = "right";
                 }
 
-                SDL_Log("You pressed the %d key.", input);
+                // Useful development/debug tool to check keycodes.
+                // SDL_Log("You pressed the %d key.", input);
 
 				input = remap(input);
 
@@ -289,7 +293,7 @@ struct SDL_Application{
             }
             game_is_paused = true;
             game_over = true;
-            score = 0;
+
             std::get<0>(player_pos::current_pos) = WINDOW_WIDTH  / 3.5;
             std::get<1>(player_pos::current_pos) = WINDOW_HEIGHT / 2.0;
             game_speed = 0.115;
@@ -318,7 +322,14 @@ struct SDL_Application{
         SDL_RenderTexture(mRenderer, score_text_texture, nullptr, &textRect);
 
         if (game_over){
-            SDL_RenderTexture(mRenderer, game_over_text_texture, nullptr, &textRect);
+            // Render the text showing the current score.
+            SDL_FRect gameOverTextRect;
+            gameOverTextRect.x = WINDOW_WIDTH   / 3.2f;        //  Eyeballed center of the screen...
+            gameOverTextRect.y = WINDOW_HEIGHT  / 2.2f;       //   Eyeballed center of the screen...
+            gameOverTextRect.w = WINDOW_WIDTH   / 2.2f;
+            gameOverTextRect.h = WINDOW_HEIGHT  / 5.0f;
+
+            SDL_RenderTexture(mRenderer, game_over_text_texture, nullptr, &gameOverTextRect);
         }
 
         // Puts everything on the screen.
