@@ -2,6 +2,8 @@
 #define SNAK_GAEM_H
 
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
 #include <string>
 #include <cassert>
 #include <tuple>

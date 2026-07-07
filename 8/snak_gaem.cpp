@@ -1,5 +1,5 @@
 // Credits to Mike Shah  -  https://youtu.be/yZl9X47cHi8
-// g++ snak_gaem.cpp -O3 -o snak_gaem `pkg-config --libs --cflags sdl3`
+// g++ snak_gaem.cpp -O3 -o snak_gaem `pkg-config --libs --cflags sdl3 sdl3-ttf`
 
 // .
 // .
@@ -7,7 +7,7 @@
 
 #include "snak_gaem.h"
 
-
+bool game_is_paused = false;
 
 // Swaps inputs 79 and 82 to ensure correct parity checks.
 int remap(int input){
@@ -65,6 +65,9 @@ struct SDL_Application{
     SDL_Window* mWindow;
     SDL_Renderer* mRenderer;
     
+    TTF_Font* mFont = nullptr;
+    SDL_Texture* score_text_texture = nullptr;
+    
     bool running = true;
 
     // Constructor
@@ -82,10 +85,34 @@ struct SDL_Application{
 		    }
             SDL_SetRenderLogicalPresentation(mRenderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	    }
+
+        // Initialize SDL_TTF.
+
+        if(!TTF_Init()){
+            assert(0 && "ERROR: SDL_TTF could not initialize :c");
+        }
+
+        mFont = TTF_OpenFont("./font/Minecraft.ttf", 12.0);
+
+        if(mFont == nullptr){
+            assert(0 && "ERROR: Font file \"Minecraft.ttf\" not found :c");
+        }
+        
+        /*
+        std::string text_shown = "score: " + std::to_string(score);
+        SDL_Surface* textSurface = TTF_RenderText_Solid(mFont, text_shown.c_str(), 0, SDL_Color{255, 255, 0, 255});
+
+        score_text_texture = SDL_CreateTextureFromSurface(mRenderer, textSurface);
+        SDL_SetTextureScaleMode(score_text_texture, SDL_SCALEMODE_NEAREST);        // Also called "nearest neighbour". Suitable for pixel-art textures, like the pixel-art font we are using (no interpolation or antialiasing).
+
+        SDL_DestroySurface(textSurface);
+        */
+
     }
 	    
 	// Destructor
 	~SDL_Application(){
+        TTF_Quit();
 		SDL_Quit();
 	}
 	
@@ -100,7 +127,23 @@ struct SDL_Application{
 				running = false;
 			} else if (event.type == SDL_EVENT_KEY_DOWN) {
 
-				auto input = event.button.button;
+
+                // SDL_KeyboardEvent input = event.key.key;
+				// auto input = event.button.button;
+                auto input = event.button.button;
+
+                // Quit the game when pressing escape.
+                // 41 is the escape key       (you can remap it if you want :3)
+                if (event.button.button == 41){          
+                    SDL_Quit();
+                }
+                
+                // Pause with the "R" key.
+                if (input == 21){
+                    game_is_paused = !game_is_paused;
+                }
+
+                SDL_Log("You pressed the %d key.", input);
 
 				input = remap(input);
 
@@ -206,21 +249,42 @@ struct SDL_Application{
         SDL_SetRenderDrawColor(mRenderer, 0x00, 0xFF, 0x00, 0xFF);
     	SDL_RenderPoint(mRenderer, std::get<0>(current_item), std::get<1>(current_item));
 
-        
-		if (facing == "right") {
-			(double) (std::get<0>(player_pos::current_pos) += game_speed);
-		} else if (facing == "left") {
-			(double) (std::get<0>(player_pos::current_pos) -= game_speed);
-		} else if (facing == "up") {
-			(double) (std::get<1>(player_pos::current_pos) -= game_speed);
-		} else {	// facing == "down".
-			(double) (std::get<1>(player_pos::current_pos) += game_speed);
-		}
+        if (!game_is_paused){
+		    if (facing == "right") {
+			    (double) (std::get<0>(player_pos::current_pos) += game_speed);
+		    } else if (facing == "left") {
+			    (double) (std::get<0>(player_pos::current_pos) -= game_speed);
+		    } else if (facing == "up") {
+			    (double) (std::get<1>(player_pos::current_pos) -= game_speed);
+		    } else {	// facing == "down".
+			    (double) (std::get<1>(player_pos::current_pos) += game_speed);
+		    }
+        }
 
         // Renders the player		
         SDL_SetRenderDrawColor(mRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderPoint(mRenderer, std::get<0>(player_pos::current_pos), std::get<1>(player_pos::current_pos));
         
+        
+        // Render the text showing the current score.
+        SDL_FRect textRect;
+        textRect.x = WINDOW_WIDTH  / 2.0f;
+        textRect.y = 0.0f;
+        textRect.w = WINDOW_WIDTH  / 2.2f;
+        textRect.h = WINDOW_HEIGHT / 5.0f;
+
+
+        std::string text_shown = "score: " + std::to_string(score);
+        SDL_Surface* textSurface = TTF_RenderText_Solid(mFont, text_shown.c_str(), 0, SDL_Color{255, 255, 0, 255});
+
+        score_text_texture = SDL_CreateTextureFromSurface(mRenderer, textSurface);
+        SDL_SetTextureScaleMode(score_text_texture, SDL_SCALEMODE_NEAREST);        // Also called "nearest neighbour". Suitable for pixel-art textures, like the pixel-art font we are using (no interpolation or antialiasing).
+
+        SDL_DestroySurface(textSurface);
+
+        SDL_RenderTexture(mRenderer, score_text_texture, nullptr, &textRect);
+
+        // Puts everything on the screen.
 		SDL_RenderPresent(mRenderer);
 	}
 
@@ -244,8 +308,11 @@ struct SDL_Application{
 
 			Uint64 deltaTime = SDL_GetTicks() - currentTick;
             
-            SDL_Delay(16.666666 - deltaTime);       // Homemade VSync...      
-            SDL_Delay(4.1666666 - deltaTime);       // Homemade 240fps cap...     
+            // SDL_Delay(16.666666 - deltaTime);       // Homemade VSync...      
+            
+            if ((4.1666666 - deltaTime) > 0){
+                SDL_Delay(4.1666666 - deltaTime);       // Homemade 240fps cap...     
+            }
 
 			if (currentTick > lastTime + 1000) {
 				lastTime = currentTick;
