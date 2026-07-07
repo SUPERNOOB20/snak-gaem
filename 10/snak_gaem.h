@@ -54,7 +54,7 @@ namespace player_pos
 	*/
 
     // Start near the center of the screen idk
-	std::tuple<double, double> current_pos(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2);
+	std::tuple<double, double> current_pos(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2.0);
 }
 
 

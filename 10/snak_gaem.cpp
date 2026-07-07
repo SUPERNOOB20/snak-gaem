@@ -8,6 +8,7 @@
 #include "snak_gaem.h"
 
 bool game_is_paused = false;
+bool game_over      = false;
 
 // Swaps inputs 79 and 82 to ensure correct parity checks.
 int remap(int input){
@@ -67,6 +68,7 @@ struct SDL_Application{
     
     TTF_Font* mFont = nullptr;
     SDL_Texture* score_text_texture = nullptr;
+    SDL_Texture* game_over_text_texture = nullptr;
     
     bool running = true;
 
@@ -108,6 +110,15 @@ struct SDL_Application{
         SDL_DestroySurface(textSurface);
         */
 
+
+        std::string text_shown = "GAME OVER";
+        SDL_Surface* textSurface2 = TTF_RenderText_Solid(mFont, text_shown.c_str(), 0, SDL_Color{255, 0, 0, 255});
+
+        game_over_text_texture = SDL_CreateTextureFromSurface(mRenderer, textSurface2);
+        SDL_SetTextureScaleMode(game_over_text_texture, SDL_SCALEMODE_NEAREST);        // Also called "nearest neighbour". Suitable for pixel-art textures, like the pixel-art font we are using (no interpolation or antialiasing).
+
+        SDL_DestroySurface(textSurface2);
+
     }
 	    
 	// Destructor
@@ -138,9 +149,17 @@ struct SDL_Application{
                     SDL_Quit();
                 }
                 
-                // Pause with the "R" key.
-                if (input == 21){
+                
+                // Pause with the "Q" key.
+                if (input == 20){
                     game_is_paused = !game_is_paused;
+                }
+                
+
+                // Use the "R" key to restart after a game over.
+                if (input == 21 && game_over){
+                    game_is_paused = false;
+                    game_over = false;
                 }
 
                 SDL_Log("You pressed the %d key.", input);
@@ -261,10 +280,24 @@ struct SDL_Application{
 		    }
         }
 
+        // If the player crashes onto the borders of the playfield, it's
+        // game over.
+        if (((std::get<0>(player_pos::current_pos) <  playfield.x) || (std::get<1>(player_pos::current_pos) <  playfield.y))
+            || ((std::get<0>(player_pos::current_pos) >  (playfield.x + playfield.w)) || (std::get<1>(player_pos::current_pos) >  (playfield.y + playfield.h)))){
+            if (score > hiscore){
+                hiscore = score;
+            }
+            game_is_paused = true;
+            game_over = true;
+            score = 0;
+            std::get<0>(player_pos::current_pos) = WINDOW_WIDTH  / 3.5;
+            std::get<1>(player_pos::current_pos) = WINDOW_HEIGHT / 2.0;
+            game_speed = 0.115;
+        }
+
         // Renders the player		
         SDL_SetRenderDrawColor(mRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderPoint(mRenderer, std::get<0>(player_pos::current_pos), std::get<1>(player_pos::current_pos));
-        
         
         // Render the text showing the current score.
         SDL_FRect textRect;
@@ -283,6 +316,10 @@ struct SDL_Application{
         SDL_DestroySurface(textSurface);
 
         SDL_RenderTexture(mRenderer, score_text_texture, nullptr, &textRect);
+
+        if (game_over){
+            SDL_RenderTexture(mRenderer, game_over_text_texture, nullptr, &textRect);
+        }
 
         // Puts everything on the screen.
 		SDL_RenderPresent(mRenderer);
