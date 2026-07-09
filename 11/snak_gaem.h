@@ -24,8 +24,8 @@
 #define PLAYFIELD_WIDTH 48
 #define PLAYFIELD_HEIGHT 24
 
-double game_speed                  = 0.035;      // fine-tuned initial player speed value after a lot of testplaying... (MY own testplaying ":3)
-double chosen_game_speed_increment = 1.22;      //  fine-tuned initial player speed value after a lot of testplaying... (MY own testplaying ":3)
+double game_speed                  = 0.015;      // fine-tuned initial player speed value after a lot of testplaying... (MY own testplaying ":3)
+double chosen_game_speed_increment = 1.1;       //  fine-tuned initial player speed value after a lot of testplaying... (MY own testplaying ":3)
 
 
 
@@ -75,7 +75,70 @@ SDL_FRect playfield_but_bigger{
 };
 
 
+namespace main_menu
+{
+    SDL_FRect easyTextRect{
+        .x = WINDOW_WIDTH   / 2.75f,                    //  Eyeballed center of the screen...
+        .y = WINDOW_HEIGHT  / 6.2f,
+        .w = WINDOW_WIDTH   / 3.2f,
+        .h = WINDOW_HEIGHT  / 8.0f
+    };
 
+    SDL_FRect mediumTextRect{
+        .x = WINDOW_WIDTH   / 3.0f,                     //  Eyeballed center of the screen...
+        .y = WINDOW_HEIGHT  / 2.2f,
+        .w = WINDOW_WIDTH   / 3.2f,
+        .h = WINDOW_HEIGHT  / 8.0f
+    };
+
+    SDL_FRect hardTextRect{
+        .x = WINDOW_WIDTH   / 2.75f,                    //  Eyeballed center of the screen...
+        .y = WINDOW_HEIGHT  / 1.32f,
+        .w = WINDOW_WIDTH   / 3.2f,
+        .h = WINDOW_HEIGHT  / 8.0f
+    };
+
+
+
+
+    SDL_FRect easyButtonRect{
+        .x = WINDOW_WIDTH   / 3.5f,                     //  Eyeballed center of the screen...
+        .y = WINDOW_HEIGHT  * (0.9f / 6.0f),
+        .w = WINDOW_WIDTH   / 2.2f,
+        .h = WINDOW_HEIGHT  * (1.0f / 6.0f)
+    };
+
+    SDL_FRect mediumButtonRect{
+        .x = WINDOW_WIDTH   / 3.5f,        //  Eyeballed center of the screen...
+        .y = WINDOW_HEIGHT  * (2.65f / 6.0f),
+        .w = WINDOW_WIDTH   / 2.2f,
+        .h = WINDOW_HEIGHT  * (1.0f / 6.0f)
+    };
+
+    SDL_FRect hardButtonRect{
+        .x = WINDOW_WIDTH   / 3.5f,        //  Eyeballed center of the screen...
+        .y = WINDOW_HEIGHT  * (4.4f / 6.0f),
+        .w = WINDOW_WIDTH   / 2.2f,
+        .h = WINDOW_HEIGHT  * (1.0f / 6.0f)
+    };
+}
+
+
+// SCORE COUNTER
+SDL_FRect scoreTextRect{
+    .x = WINDOW_WIDTH  / 2.0f,
+    .y =                 0.0f,
+    .w = WINDOW_WIDTH  / 2.2f,
+    .h = WINDOW_HEIGHT / 5.0f,
+};
+
+// GAME OVER SIGN.
+SDL_FRect gameOverTextRect{
+    .x = WINDOW_WIDTH   / 3.2f,        //  Eyeballed center of the screen...
+    .y = WINDOW_HEIGHT  / 2.2f,       //   Eyeballed center of the screen...
+    .w = WINDOW_WIDTH   / 2.2f,
+    .h = WINDOW_HEIGHT  / 5.0f
+};
 
 // You have to be moving SOMEWHERE when you first start the game, no?
 int pre_input = 82;

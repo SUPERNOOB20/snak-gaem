@@ -81,14 +81,19 @@ struct SDL_Application{
     SDL_Window* mWindow;
     SDL_Renderer* mRenderer;
 
-    SDL_Texture* easy_button_texture = nullptr;
-    SDL_Texture* medium_button_texture = nullptr;
-    SDL_Texture* hard_button_texture = nullptr;
+    SDL_Texture* easy_button_texture     =  nullptr;
+    SDL_Texture* medium_button_texture   =  nullptr;
+    SDL_Texture* hard_button_texture     =  nullptr;
 
     
-    TTF_Font* mFont = nullptr;
-    SDL_Texture* score_text_texture = nullptr;
-    SDL_Texture* game_over_text_texture = nullptr;
+    TTF_Font* mFont                      =  nullptr;
+    TTF_Font* elegantFont                =  nullptr;
+    SDL_Texture* score_text_texture      =  nullptr;
+    SDL_Texture* game_over_text_texture  =  nullptr;
+
+    SDL_Texture* easy_text_texture       =  nullptr;
+    SDL_Texture* medium_text_texture     =  nullptr;
+    SDL_Texture* hard_text_texture       =  nullptr;
     
     bool running = true;
 
@@ -121,6 +126,15 @@ struct SDL_Application{
         }
 
 
+
+        elegantFont = TTF_OpenFont("./font/Peach Club Script TTF.ttf", 36.0);
+
+        if(mFont == nullptr){
+            assert(0 && "ERROR: Font file \"Minecraft.ttf\" not found :c");
+        }
+
+
+
         std::string text_shown = "GAME OVER";
         SDL_Surface* textSurface2 = TTF_RenderText_Solid(mFont, text_shown.c_str(), 0, SDL_Color{255, 0, 0, 255});
 
@@ -130,6 +144,30 @@ struct SDL_Application{
         SDL_DestroySurface(textSurface2);
 
 
+        text_shown = "Easy";
+        SDL_Surface* easy_text_surface = TTF_RenderText_Solid(elegantFont, text_shown.c_str(), 0, SDL_Color{0, 90, 20, 255});
+
+        text_shown = "Medium";
+        SDL_Surface* medium_text_surface = TTF_RenderText_Solid(elegantFont, text_shown.c_str(), 0, SDL_Color{90, 90, 0, 255});
+
+        text_shown = "Hard";
+        SDL_Surface* hard_text_surface = TTF_RenderText_Solid(elegantFont, text_shown.c_str(), 0, SDL_Color{90, 0, 0, 255});
+
+            
+        easy_text_texture = SDL_CreateTextureFromSurface(mRenderer, easy_text_surface);
+        SDL_SetTextureScaleMode(easy_text_texture, SDL_SCALEMODE_LINEAR);        // Also called "nearest neighbour". Suitable for pixel-art textures, like the pixel-art font we are using (no interpolation or antialiasing).
+        SDL_DestroySurface(easy_text_surface);
+
+        medium_text_texture = SDL_CreateTextureFromSurface(mRenderer, medium_text_surface);
+        SDL_SetTextureScaleMode(medium_text_texture, SDL_SCALEMODE_LINEAR);        // Also called "nearest neighbour". Suitable for pixel-art textures, like the pixel-art font we are using (no interpolation or antialiasing).
+        SDL_DestroySurface(medium_text_surface);
+
+        hard_text_texture = SDL_CreateTextureFromSurface(mRenderer, hard_text_surface);
+        SDL_SetTextureScaleMode(hard_text_texture, SDL_SCALEMODE_LINEAR);        // Also called "nearest neighbour". Suitable for pixel-art textures, like the pixel-art font we are using (no interpolation or antialiasing).
+        SDL_DestroySurface(hard_text_surface);
+
+
+
         SDL_Surface* easy_button_surface    =  SDL_LoadPNG("./easy_button.png");
         SDL_Surface* medium_button_surface  =  SDL_LoadPNG("./medium_button.png");
         SDL_Surface* hard_button_surface    =  SDL_LoadPNG("./hard_button.png");
@@ -137,6 +175,11 @@ struct SDL_Application{
         easy_button_texture    =  SDL_CreateTextureFromSurface(mRenderer, easy_button_surface);
         medium_button_texture  =  SDL_CreateTextureFromSurface(mRenderer, medium_button_surface);
         hard_button_texture    =  SDL_CreateTextureFromSurface(mRenderer, hard_button_surface);
+
+        SDL_DestroySurface(easy_button_surface);
+        SDL_DestroySurface(medium_button_surface);
+        SDL_DestroySurface(hard_button_surface);
+
 
     }
 	    
@@ -241,9 +284,13 @@ struct SDL_Application{
         switch(scene) {
 
             case 0:
-        		SDL_RenderTexture(mRenderer, easy_button_texture,   nullptr, nullptr);
-        		SDL_RenderTexture(mRenderer, medium_button_texture, nullptr, nullptr);
-        		SDL_RenderTexture(mRenderer, hard_button_texture,   nullptr, nullptr);
+        		SDL_RenderTexture(mRenderer, easy_button_texture,   nullptr, &main_menu::easyButtonRect);
+        		SDL_RenderTexture(mRenderer, medium_button_texture, nullptr, &main_menu::mediumButtonRect);
+        		SDL_RenderTexture(mRenderer, hard_button_texture,   nullptr, &main_menu::hardButtonRect);
+
+                SDL_RenderTexture(mRenderer, easy_text_texture,     nullptr, &main_menu::easyTextRect);
+                SDL_RenderTexture(mRenderer, medium_text_texture,   nullptr, &main_menu::mediumTextRect);
+                SDL_RenderTexture(mRenderer, hard_text_texture,     nullptr, &main_menu::hardTextRect);
                 break;
 
             case 1:
@@ -303,7 +350,7 @@ struct SDL_Application{
 
                     std::get<0>(player_pos::current_pos) = WINDOW_WIDTH  / 3.5;
                     std::get<1>(player_pos::current_pos) = WINDOW_HEIGHT / 2.0;
-                    game_speed = 0.115;
+                    game_speed = 0.015;
                 }
 
                 // Renders the player		
@@ -311,13 +358,6 @@ struct SDL_Application{
 		        SDL_RenderPoint(mRenderer, std::get<0>(player_pos::current_pos), std::get<1>(player_pos::current_pos));
                 
                 // Render the text showing the current score.
-                SDL_FRect textRect;
-                textRect.x = WINDOW_WIDTH  / 2.0f;
-                textRect.y = 0.0f;
-                textRect.w = WINDOW_WIDTH  / 2.2f;
-                textRect.h = WINDOW_HEIGHT / 5.0f;
-
-
                 std::string text_shown = "score: " + std::to_string(score);
                 SDL_Surface* textSurface = TTF_RenderText_Solid(mFont, text_shown.c_str(), 0, SDL_Color{255, 255, 0, 255});
 
@@ -326,16 +366,10 @@ struct SDL_Application{
 
                 SDL_DestroySurface(textSurface);
 
-                SDL_RenderTexture(mRenderer, score_text_texture, nullptr, &textRect);
+                SDL_RenderTexture(mRenderer, score_text_texture, nullptr, &scoreTextRect);
 
                 if (game_over){
-                    // Render the text showing the current score.
-                    SDL_FRect gameOverTextRect;
-                    gameOverTextRect.x = WINDOW_WIDTH   / 3.2f;        //  Eyeballed center of the screen...
-                    gameOverTextRect.y = WINDOW_HEIGHT  / 2.2f;       //   Eyeballed center of the screen...
-                    gameOverTextRect.w = WINDOW_WIDTH   / 2.2f;
-                    gameOverTextRect.h = WINDOW_HEIGHT  / 5.0f;
-
+                    // Render the game over text showing the current score.
                     SDL_RenderTexture(mRenderer, game_over_text_texture, nullptr, &gameOverTextRect);
                 }
             
@@ -361,6 +395,7 @@ struct SDL_Application{
 
                 game_speed                  = 0.015;       //  Easy
                 chosen_game_speed_increment = 1.1;        //   Easy
+
                 break;
 
 

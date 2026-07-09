@@ -24,7 +24,7 @@
 #define PLAYFIELD_WIDTH 48
 #define PLAYFIELD_HEIGHT 24
 
-double game_speed = 0.115;      // fine-tuned initial player speed value after a lot of testplaying... (MY own testplaying ":3)
+double game_speed = 0.035;      // fine-tuned initial player speed value after a lot of testplaying... (MY own testplaying ":3)
 
 
 

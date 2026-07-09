@@ -255,7 +255,7 @@ struct SDL_Application{
 
         if ((currentFrame == 0) || (item_got_picked_up)){
 
-            game_speed *= 1.25;
+            game_speed *= 1.1;
 
             std::tuple<Sint32, Sint32> new_item = generate_item();
 
@@ -296,7 +296,7 @@ struct SDL_Application{
 
             std::get<0>(player_pos::current_pos) = WINDOW_WIDTH  / 3.5;
             std::get<1>(player_pos::current_pos) = WINDOW_HEIGHT / 2.0;
-            game_speed = 0.115;
+            game_speed = 0.035;
         }
 
         // Renders the player		
