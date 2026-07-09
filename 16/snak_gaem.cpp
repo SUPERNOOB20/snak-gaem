@@ -220,8 +220,8 @@ struct SDL_Application{
                 
                 // DEBUG MODE
                 if (input == 7) {
-                    SDL_Log("current_scene: %d", scene);
-                    SDL_Log("Player position: (%f, %f)", std::get<0>(player_pos::current_pos), std::get<1>(player_pos::current_pos));
+                    // SDL_Log("current_scene: %d", scene);
+                    // SDL_Log("Player position: (%f, %f)", std::get<0>(player_pos::current_pos), std::get<1>(player_pos::current_pos));
                 }
 
                 if (scene == 1) {
@@ -272,7 +272,7 @@ struct SDL_Application{
 						    break;
 
 					    default:
-		                    SDL_Log("Congratulations! You just pressed the %d key!!! :3", event.button.button);
+		                    // SDL_Log("Congratulations! You just pressed the %d key!!! :3", event.button.button);
 						    nop_casero = 0;		// Homemade nop instruction.
 				    }
                 }

@@ -58,4 +58,10 @@ def show_bracket_count(nombre_archivo: str):      # Donde "nombre_archivo" es de
 # print(res)
 
 # res = show_bracket_count("D:/Personal stuff/Peethon/snak_gaem.cpp")
-res = show_bracket_count("./snak_gaem.cpp")
+##### res = show_bracket_count("./snak_gaem.cpp")
+##### res = show_bracket_count("./snak_gaem.h")
+
+res1 = count_number_of_non_empty_lines("./snak_gaem.h")
+res2 = count_number_of_non_empty_lines("./snak_gaem.cpp")
+
+print(res1 + res2)
