@@ -209,7 +209,7 @@ struct SDL_Application{
 
 			} else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
     
-                user_has_clicked = true;
+                player_has_clicked = true;
                 
             } else if (event.type == SDL_EVENT_KEY_DOWN) {
 
@@ -289,19 +289,19 @@ struct SDL_Application{
         // Main menu. Ugh, I really should learn enums
         // so I can use them for scene IDs... e.e
         if (scene == 0) {
-            if (hard_is_clicked()){
+            if (hard_is_clicked){
                     game_speed                  = 0.05;        //  Hard
                     chosen_game_speed_increment = 1.5;        //   Hard
-            } else if (medium_is_clicked()) {
+            } else if (medium_is_clicked) {
                     game_speed                  = 0.03;        //  Medium
                     chosen_game_speed_increment = 1.25;       //   Medium
-            } else if (easy_is_clicked()) {
+            } else if (easy_is_clicked) {
                     game_speed                  = 0.015;       //  Easy
                     chosen_game_speed_increment = 1.1;        //   Easy
             }
         }
 
-        user_has_clicked = false;
+        player_has_clicked = false;
 	}
 
 

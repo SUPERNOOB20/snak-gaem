@@ -154,13 +154,19 @@ float mouse_pos_y = 0;
 
 bool player_has_clicked = false;
 
+/*
 bool is_player_hovering_over_obj(SDL_FRect* &rect){
     return ((mouse_pos_x >= rect->x && mouse_pos_x <= rect->x + rect->w) && (mouse_pos_y >= rect->y && mouse_pos_y <= rect->y + rect->h));           // (player is within horizontal bounds) && (player is within vertical bounds)
 }
+*/
 
-bool player_is_hovering_easy    =  is_player_hovering_over_obj(&main_menu::easyButtonRect);
-bool player_is_hovering_medium  =  is_player_hovering_over_obj(&main_menu::mediumButtonRect);
-bool player_is_hovering_hard    =  is_player_hovering_over_obj(&main_menu::hardButtonRect);
+bool is_player_hovering_over_obj(SDL_FRect rect){
+    return ((mouse_pos_x >= rect.x && mouse_pos_x <= rect.x + rect.w) && (mouse_pos_y >= rect.y && mouse_pos_y <= rect.y + rect.h));           // (player is within horizontal bounds) && (player is within vertical bounds)
+}
+
+bool player_is_hovering_easy    =  is_player_hovering_over_obj(main_menu::easyButtonRect);
+bool player_is_hovering_medium  =  is_player_hovering_over_obj(main_menu::mediumButtonRect);
+bool player_is_hovering_hard    =  is_player_hovering_over_obj(main_menu::hardButtonRect);
 
 
 bool easy_is_clicked   = player_has_clicked && player_is_hovering_easy;
