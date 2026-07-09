@@ -7,12 +7,12 @@
 
 #include "snak_gaem.h"
 
-bool starting_speed = 0;
+double starting_speed = 0;
 
 bool game_is_paused = false;
 bool game_over      = false;
 
-bool scene          = 1;
+bool scene          = 0;
 
 Uint64 score    =  0;
 Uint64 hiscore  =  0;
@@ -241,6 +241,10 @@ struct SDL_Application{
                     if (input == 21 && game_over){
                         score = 0;
 
+                        SDL_Log("starting speed: %f", starting_speed);
+                        SDL_Log("game speed: %f", game_speed);
+
+                        game_speed = starting_speed;
                         game_is_paused = false;
                         game_over = false;
                         input = 79;             // When you respawn, facing = "right";
