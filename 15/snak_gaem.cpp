@@ -398,7 +398,7 @@ struct SDL_Application{
 
                     std::get<0>(player_pos::current_pos) = WINDOW_WIDTH  / 3.5;
                     std::get<1>(player_pos::current_pos) = WINDOW_HEIGHT / 2.0;
-                    game_speed = 0.015;
+                    game_speed = starting_speed;
                 }
 
                 // Renders the player		
