@@ -10,7 +10,11 @@
 bool game_is_paused = false;
 bool game_over      = false;
 
-bool scene          = 0;
+bool scene          = 1;
+
+int score    =  0;
+int hiscore  =  0;
+
 
 // Swaps inputs 79 and 82 to ensure correct parity checks.
 int remap(int input){
@@ -54,16 +58,25 @@ std::tuple<float, float> generate_item(){
 
 std::tuple<Sint32, Sint32> current_item = generate_item();
 
+void pick_up_items(int currentFrame, bool item_got_picked_up){
+    if ((currentFrame == 0) || (item_got_picked_up)){
 
+        game_speed *= chosen_game_speed_increment;
+
+        std::tuple<Sint32, Sint32> new_item = generate_item();
+
+        std::get<0>(current_item) = std::get<0>(new_item);
+        std::get<1>(current_item) = std::get<1>(new_item);
+
+        if (item_got_picked_up){
+            score++;
+        }
+    }
+}
 
 
 
 struct SDL_Application{
-
-    int score    =  0;
-    int hiscore  =  0;
-
-
 
     SDL_Window* mWindow;
     SDL_Renderer* mRenderer;
@@ -153,61 +166,63 @@ struct SDL_Application{
                 // 41 is the escape key       (you can remap it if you want :3)
                 if (event.button.button == 41){  
                     if (scene == 1){        // Playfield ---> Main menu
-                        scene -= 1
+                        scene -= 1;
                     } else {               //  Main menu ---> Exit the game
                         SDL_Quit();
+                    }    
                 }
                 
-                
-                // Pause with the "Q" key.
-                if (input == 20 && !game_over){
-                    game_is_paused = !game_is_paused;
+                if (scene == 1) {
+                    // Pause with the "Q" key.
+                    if (input == 20 && !game_over){
+                        game_is_paused = !game_is_paused;
+                    }
+                    
+
+                    // Use the "R" key to restart after a game over.
+                    if (input == 21 && game_over){
+                        score = 0;
+
+                        game_is_paused = false;
+                        game_over = false;
+                        input = 79;             // When you respawn, facing = "right";
+                    }
+
+                    // Useful development/debug tool to check keycodes.
+                    // SDL_Log("You pressed the %d key.", input);
+
+				    input = remap(input);
+
+				    // Consider replacing this with an enum in the future, for tidier code...
+				    if ((pre_input % 2) != (input % 2)){
+					    pre_input = input;		// Moving backwards will not be allowed!
+				    }
+
+                	switch (pre_input) {
+
+	                	case 79:
+	                		// facing = "right";
+	                		facing = "up";
+	                		break;
+	                		
+                		case 80:
+                			facing = "left";
+                			break;
+                			
+					    case 81:
+						    facing = "down";
+						    break;
+						    
+                		case 82:
+						    // facing = "up";
+						    facing = "right";
+						    break;
+
+					    default:
+		                    // SDL_Log("Congratulations! You just pressed the %d key!!! :3", event.button.button);
+						    nop_casero = 0;		// Homemade nop instruction.
+				    }
                 }
-                
-
-                // Use the "R" key to restart after a game over.
-                if (input == 21 && game_over){
-                    score = 0;
-
-                    game_is_paused = false;
-                    game_over = false;
-                    input = 79;             // When you respawn, facing = "right";
-                }
-
-                // Useful development/debug tool to check keycodes.
-                // SDL_Log("You pressed the %d key.", input);
-
-				input = remap(input);
-
-				// Consider replacing this with an enum in the future, for tidier code...
-				if ((pre_input % 2) != (input % 2)){
-					pre_input = input;		// Moving backwards will not be allowed!
-				}
-
-            	switch (pre_input) {
-
-	            	case 79:
-	            		// facing = "right";
-	            		facing = "up";
-	            		break;
-	            		
-            		case 80:
-            			facing = "left";
-            			break;
-            			
-					case 81:
-						facing = "down";
-						break;
-						
-            		case 82:
-						// facing = "up";
-						facing = "right";
-						break;
-
-					default:
-		                // SDL_Log("Congratulations! You just pressed the %d key!!! :3", event.button.button);
-						nop_casero = 0;		// Homemade nop instruction.
-				}
             }
 		}
 	}
@@ -219,6 +234,10 @@ struct SDL_Application{
 
 	void Render(int currentFrame){
 
+        // SDL_SetRenderDrawColor(mRenderer, 0xBB, 0xAA, 0xEE, 0xFF);
+        SDL_SetRenderDrawColor(mRenderer, 0x9C, 0x65, 0x7D, 0xFF);
+        SDL_RenderClear(mRenderer);
+        
         switch(scene) {
 
             case 0:
@@ -228,25 +247,6 @@ struct SDL_Application{
                 break;
 
             case 1:
-		        // SDL_SetRenderDrawColor(mRenderer, 0xBB, 0xAA, 0xEE, 0xFF);
-                SDL_SetRenderDrawColor(mRenderer, 0x9C, 0x65, 0x7D, 0xFF);
-		        SDL_RenderClear(mRenderer);
-
-                SDL_FRect playfield{
-                    .x = (WINDOW_WIDTH - PLAYFIELD_WIDTH) / 2,
-                    .y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT) / 2,
-                    .w = PLAYFIELD_WIDTH,
-                    .h = PLAYFIELD_HEIGHT
-                };
-
-                float scale_factor = 0.9f;
-
-                SDL_FRect playfield_but_bigger{
-                    .x = (WINDOW_WIDTH - PLAYFIELD_WIDTH - scale_factor) / 2,
-                    .y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT - scale_factor) / 2,
-                    .w = PLAYFIELD_WIDTH * 1.0f + scale_factor,
-                    .h = PLAYFIELD_HEIGHT * 1.0f + scale_factor
-                };
 
                 // Renders the playfield (outer part).
 		        SDL_SetRenderDrawColor(mRenderer, 0xcc, 0x88, 0x88, 0xFF);
@@ -271,19 +271,8 @@ struct SDL_Application{
                 // SDL_Log("distance to item: %f", SDL_pow((SDL_pow(((float) (std::get<0>(current_item))) - std::get<0>(player_pos::current_pos), 2) + SDL_pow(((float) (std::get<1>(current_item))) - std::get<1>(player_pos::current_pos), 2)), 1/2));
                 // SDL_Log("bool: %d", item_got_picked_up);
 
-                if ((currentFrame == 0) || (item_got_picked_up)){
 
-                    game_speed *= chosen_game_speed_increment;
-
-                    std::tuple<Sint32, Sint32> new_item = generate_item();
-
-                    std::get<0>(current_item) = std::get<0>(new_item);
-                    std::get<1>(current_item) = std::get<1>(new_item);
-
-                    if (item_got_picked_up){
-                        score++;
-                    }
-                }
+                pick_up_items(currentFrame, item_got_picked_up);
 
 
                 // Renders items.
@@ -349,6 +338,7 @@ struct SDL_Application{
 
                     SDL_RenderTexture(mRenderer, game_over_text_texture, nullptr, &gameOverTextRect);
                 }
+            
         }
 
         // Puts everything on the screen.
@@ -359,26 +349,31 @@ struct SDL_Application{
 
 	// Every tick is one iteration of the game loop.
 	void Tick(int currentFrame){
-    switch(scene) {
-        case 0:
-            // Scene1: Main Menu.
+        switch(scene) {
+            case 0:
+                // Scene1: Main Menu.
 
-            game_speed                  = 0.05;        //  Hard
-            chosen_game_speed_increment = 1.5;        //   Hard
+                game_speed                  = 0.05;        //  Hard
+                chosen_game_speed_increment = 1.5;        //   Hard
 
-            game_speed                  = 0.03;        //  Medium
-            chosen_game_speed_increment = 1.25;       //   Medium
+                game_speed                  = 0.03;        //  Medium
+                chosen_game_speed_increment = 1.25;       //   Medium
 
-            game_speed                  = 0.015;       //  Easy
-            chosen_game_speed_increment = 1.1;        //   Easy
-            break;
+                game_speed                  = 0.015;       //  Easy
+                chosen_game_speed_increment = 1.1;        //   Easy
+                break;
 
-        case 1:
-            // Scene2: Game.
-    	    Input();
-    		Update();
-    		Render(currentFrame);
+
+            case 1:
+                // Scene2: Game.
+        	    int homemade_nop = 0;
+        }
+
+        Input();
+		Update();
+		Render(currentFrame);
 	}
+
 
 	void MainLoop(){
 		Uint64 fps = 0;

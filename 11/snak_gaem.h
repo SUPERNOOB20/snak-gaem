@@ -58,6 +58,25 @@ namespace player_pos
 }
 
 
+SDL_FRect playfield{
+    .x = (WINDOW_WIDTH - PLAYFIELD_WIDTH) / 2,
+    .y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT) / 2,
+    .w = PLAYFIELD_WIDTH,
+    .h = PLAYFIELD_HEIGHT
+};
+
+float scale_factor = 0.9f;
+
+SDL_FRect playfield_but_bigger{
+    .x = (WINDOW_WIDTH - PLAYFIELD_WIDTH - scale_factor) / 2,
+    .y = (WINDOW_HEIGHT - PLAYFIELD_HEIGHT - scale_factor) / 2,
+    .w = PLAYFIELD_WIDTH * 1.0f + scale_factor,
+    .h = PLAYFIELD_HEIGHT * 1.0f + scale_factor
+};
+
+
+
+
 // You have to be moving SOMEWHERE when you first start the game, no?
 int pre_input = 82;
 std::string facing = "right";
